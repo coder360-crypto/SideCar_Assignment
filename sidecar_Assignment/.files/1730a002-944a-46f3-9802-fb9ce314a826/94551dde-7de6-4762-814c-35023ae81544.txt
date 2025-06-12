@@ -1,0 +1,14 @@
+{
+  "voyage_number": "0096W",
+  "arrival_date": "2025-03-28",
+  "departure_date": "2025-03-17",
+  "vessel_name": "YM MANDATE",
+  "port_of_loading": "SINGAPORE",
+  "port_of_discharge": "NHAVA SHEVA, INDIA",
+  "status": "Import Empty Container Returned",
+  "booking_id": "SINI25432400",
+  "retrieved_at": "2025-06-13T00:40:17.012864",
+  "source": "seacargotracking.net",
+  "method": "ai_browser_automation",
+  "llm_provider": "gemini"
+}
