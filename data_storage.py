@@ -1,13 +1,3 @@
-"""
-Data Storage Module
-==================
-
-Handles data persistence, caching, and interaction pattern storage
-for the shipping tracking system.
-
-Author: AI Assistant
-"""
-
 import json
 import os
 import asyncio

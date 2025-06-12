@@ -1,13 +1,3 @@
-"""
-Configuration Module
-==================
-
-Manages configuration settings, environment variables, and system parameters
-for the shipping tracking system.
-
-Author: AI Assistant
-"""
-
 import os
 from typing import Dict, Any
 from dotenv import load_dotenv

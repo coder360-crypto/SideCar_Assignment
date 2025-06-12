@@ -1,14 +1,3 @@
-"""
-Browser Controller Module
-========================
-
-Handles browser automation and web interaction logic for the shipping tracking system.
-This module provides a high-level interface for browser operations while maintaining
-flexibility for different website structures.
-
-Author: AI Assistant
-"""
-
 import asyncio
 import json
 from typing import Dict, List, Optional
