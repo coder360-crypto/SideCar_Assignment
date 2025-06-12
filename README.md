@@ -2,6 +2,11 @@
 
 A robust, repeatable AI-driven solution that automatically retrieves voyage numbers and arrival dates for HMM shipping line booking IDs using natural language processing and browser automation. This system includes both a command-line interface for direct tracking and an interactive chat application.
 
+
+## Video Demonstration link: https://drive.google.com/file/d/1Z8Mibtq_VGG_x3FDtOefeAHkoDSyXKx8/view?usp=sharing
+
+## Try to use Gemini-2.5-pro it gives the best and fastest results
+
 ## 🎯 Assignment Overview
 
 **Assignment ID**: SINI25432400 (example)
