@@ -83,7 +83,7 @@ class ShippingTrackingAgent:
         self.llm_provider = (llm_provider or LLM_PROVIDER).lower()
         
         # Store the API key
-        self.api_key = api_key
+        self.api_key = api_key 
         
         # Initialize the appropriate LLM based on provider
         self.llm = self._initialize_llm()
@@ -108,7 +108,7 @@ class ShippingTrackingAgent:
             return ChatGoogleGenerativeAI(
                 model="gemini-2.5-flash-preview-05-20",  # Updated to use the latest available model
                 temperature=0.5,
-                google_api_key=api_key,
+                google_api_key=api_key or os.getenv("GOOGLE_API_KEY") 
                # convert_system_message_to_human=True  # Gemini compatibility
             )
             
@@ -482,3 +482,80 @@ Return results in JSON format:
             else {"error": str(results[i]), "booking_id": booking_ids[i], "llm_provider": self.llm_provider}
             for i in range(len(booking_ids))
         }
+
+async def main():
+    """
+    Main function to run the shipping tracking agent from command line.
+    """
+    if len(sys.argv) != 2:
+        print("Usage: python agent.py <booking_id>")
+        print("Example: python agent.py SINI25432400")
+        sys.exit(1)
+    
+    booking_id = sys.argv[1]
+    
+    try:
+        # Create the tracking agent
+        agent = ShippingTrackingAgent()
+        
+        # Track the shipment
+        result = await agent.track_shipment(booking_id)
+        
+        # Print the results in a formatted way
+        print("\n" + "="*60)
+        print("📦 SHIPPING TRACKING RESULTS")
+        print("="*60)
+        
+        if "error" in result:
+            print(f"❌ Tracking failed for booking ID: {booking_id}")
+            print(f"Error: {result['error']}")
+            if "raw_result" in result:
+                print(f"Raw result: {result['raw_result'][:500]}...")
+        else:
+            print(f"✅ Tracking successful for booking ID: {booking_id}")
+            print(f"🤖 LLM Provider: {result.get('llm_provider', 'Unknown')}")
+            print(f"📅 Retrieved at: {result.get('retrieved_at', 'Unknown')}")
+            print(f"🌐 Source: {result.get('source', 'Unknown')}")
+            print()
+            
+            # Print container details if available
+            if "container_details" in result:
+                details = result["container_details"]
+                print("📋 CONTAINER DETAILS:")
+                print(f"   Status: {details.get('status', 'N/A')}")
+                print(f"   Vessel: {details.get('vessel_name', 'N/A')}")
+                print(f"   Voyage: {details.get('voyage_number', 'N/A')}")
+                print(f"   Port of Loading: {details.get('port_of_loading', 'N/A')}")
+                print(f"   Port of Discharge: {details.get('port_of_discharge', 'N/A')}")
+                print(f"   Departure Date: {details.get('departure_date', 'N/A')}")
+                print(f"   Arrival Date: {details.get('arrival_date', 'N/A')}")
+                print(f"   Current Location: {details.get('current_location', 'N/A')}")
+                print(f"   Delivery Status: {details.get('delivery_status', 'N/A')}")
+                
+                if details.get('milestones'):
+                    print(f"   Milestones: {', '.join(details['milestones'])}")
+            else:
+                # Print direct fields if container_details not present
+                print("📋 TRACKING INFORMATION:")
+                print(f"   Voyage Number: {result.get('voyage_number', 'N/A')}")
+                print(f"   Arrival Date: {result.get('arrival_date', 'N/A')}")
+                print(f"   Departure Date: {result.get('departure_date', 'N/A')}")
+                print(f"   Vessel Name: {result.get('vessel_name', 'N/A')}")
+                print(f"   Port of Loading: {result.get('port_of_loading', 'N/A')}")
+                print(f"   Port of Discharge: {result.get('port_of_discharge', 'N/A')}")
+                print(f"   Status: {result.get('status', 'N/A')}")
+            
+            # Print exploration log if available
+            if "exploration_log" in result:
+                print(f"\n🔍 EXPLORATION LOG:")
+                print(result["exploration_log"])
+        
+        print("="*60)
+        
+    except Exception as e:
+        print(f"❌ Fatal error: {str(e)}")
+        logger.error(f"Fatal error in main: {str(e)}", exc_info=True)
+        sys.exit(1)
+
+if __name__ == "__main__":
+    asyncio.run(main())
