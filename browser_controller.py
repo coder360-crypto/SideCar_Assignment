@@ -110,6 +110,7 @@ class BrowserController:
             except Exception as e:
                 logger.error(f"Error terminating Chrome process {pid}: {e}")
 
+   
     async def start_browser(self, headless: bool = True, use_local_chrome: bool = True):
         """Start the browser instance with improved cleanup configuration."""
         logger.info(f"Starting browser (headless={headless}, use_local_chrome={use_local_chrome})...")
@@ -124,43 +125,34 @@ class BrowserController:
             # Initialize playwright first
             self.playwright = await async_playwright().start()
             
-            # Improved browser args - removed problematic ones
+            # Browser args for better network handling
             browser_args = [
                 '--no-sandbox',
                 '--disable-blink-features=AutomationControlled',
                 '--disable-web-security',
-                '--disable-dev-shm-usage',
-                '--disable-extensions',
-                '--disable-plugins',
+                '--disable-features=VizDisplayCompositor',
                 '--disable-background-timer-throttling',
                 '--disable-backgrounding-occluded-windows',
                 '--disable-renderer-backgrounding',
-                '--no-first-run',
-                '--no-default-browser-check',
-                '--disable-default-apps',
-                '--disable-sync',
-                '--disable-gpu',
-                '--disable-software-rasterizer',
                 '--disable-background-networking',
-                '--disable-component-update',
-                '--disable-features=TranslateUI',
-                '--disable-ipc-flooding-protection',
-                # Removed --single-process and --no-zygote as they can cause shutdown issues
-                '--enable-automation',  # This helps with proper cleanup
-                '--disable-background-mode',  # Prevents Chrome from staying in background
-                '--disable-extensions-http-throttling',
-                '--aggressive-cache-discard',  # Help with memory cleanup
+                '--aggressive-cache-discard',
+                '--disable-extensions',
+                '--disable-plugins',
+                '--disable-default-apps',
+                '--no-first-run',
+                '--disable-dev-shm-usage',
+                '--disable-gpu'
             ]
             
+            # Launch browser
             if use_local_chrome:
                 try:
                     self.browser = await self.playwright.chromium.launch(
-                        channel="chrome", #tries to find chrome in the default location
-                        #executable_path="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                        channel="chrome",  # comment it if specific chrome path is used
+                        # executable_path="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
                         headless=headless,
                         args=browser_args,
-                        # Add timeout for launch
-                        timeout=30000  # 30 seconds
+                        timeout=60000  # This timeout is for browser launch
                     )
                     logger.info("Successfully started with local Chrome installation")
                 except Exception as chrome_error:
@@ -168,13 +160,13 @@ class BrowserController:
                     self.browser = await self.playwright.chromium.launch(
                         headless=headless,
                         args=browser_args,
-                        timeout=30000
+                        timeout=60000
                     )
             else:
                 self.browser = await self.playwright.chromium.launch(
                     headless=headless,
                     args=browser_args,
-                    timeout=30000
+                    timeout=60000
                 )
 
             # Track new Chrome processes
@@ -182,24 +174,23 @@ class BrowserController:
             self.chrome_processes = list(new_chrome_pids)
             logger.info(f"Tracking {len(self.chrome_processes)} new Chrome processes for cleanup")
 
-            # Create a new page with realistic configuration
-            self.page = await self.browser.new_page()
-            
-            # Set realistic user agent and headers
-            await self.page.set_user_agent(
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            # CREATE CONTEXT WITHOUT TIMEOUT PARAMETER
+            context = await self.browser.new_context(
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                extra_http_headers={
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+                },
+                viewport={'width': 1920, 'height': 1080}
             )
+
+            # Create page from context
+            self.page = await context.new_page()
             
-            # Set additional headers
-            await self.page.set_extra_http_headers({
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-            })
-            
-            # Set viewport for consistency
-            await self.page.set_viewport_size({'width': 1920, 'height': 1080})
+            # SET TIMEOUTS ON THE PAGE LEVEL (This is the correct way)
+            self.page.set_default_timeout(90000)  # 90 seconds for general actions
+            self.page.set_default_navigation_timeout(120000)  # 2 minutes for navigation
             
             logger.info("Browser started and page configured successfully.")
             
@@ -208,6 +199,9 @@ class BrowserController:
             # Clean up on failure
             await self.close_browser()
             raise
+
+
+
 
     async def close_browser(self):
         """Close the browser and clean up resources with improved process cleanup."""
