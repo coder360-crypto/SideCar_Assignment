@@ -174,29 +174,8 @@ class SimpleShippingChatBot:
                 os.environ[env_key] = api_key
         
         # Initialize agent with better error handling
-        self.agent = None
-        try:
-            # First, try to create agent with provider parameter if it accepts it
-            if llm_provider:
-                try:
-                    # Check if ShippingTrackingAgent accepts llm_provider parameter
-                    import inspect
-                    sig = inspect.signature(ShippingTrackingAgent.__init__)
-                    params = list(sig.parameters.keys())
+        self.agent = ShippingTrackingAgent(llm_provider, api_key)
                     
-                    if len(params) > 1:  # More than just 'self'
-                        self.agent = ShippingTrackingAgent(llm_provider, api_key)
-                    else:
-                        self.agent = ShippingTrackingAgent()
-                except Exception as e:
-                    logger.warning(f"Could not initialize agent with provider '{llm_provider}': {e}")
-                    self.agent = ShippingTrackingAgent()
-            else:
-                self.agent = ShippingTrackingAgent()
-                
-        except Exception as e:
-            logger.error(f"Failed to initialize ShippingTrackingAgent: {e}")
-            raise ValueError(f"Could not initialize agent: {e}")
         
         self.booking_patterns = [
             r'\b[A-Z]{4}\d{8,12}\b',  # SINI25432400 pattern
@@ -748,7 +727,7 @@ logger = logging.getLogger(__name__)
 
 class ShippingTrackingAgent:
     def track_shipment(self, booking_id):
-        logger.info(f"Starting tracking for {booking_id}")
+        logger.info(f"Starting tracking for")
         logger.debug("Connecting to shipping API...")
         # Your tracking logic here
         logger.info("Tracking completed successfully")
