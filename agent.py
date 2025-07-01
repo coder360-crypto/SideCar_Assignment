@@ -5,6 +5,9 @@ import signal
 import subprocess
 import platform
 import psutil
+import tempfile
+import uuid
+import shutil
 from datetime import datetime
 from typing import Dict, Optional, Tuple
 import logging
@@ -104,17 +107,40 @@ class ShippingTrackingAgent:
         else:
             return None
 
+    async def _ensure_clean_start(self):
+        """Ensure no conflicting Chrome processes are running before starting."""
+        try:
+            # Force cleanup any existing processes
+            await self._force_kill_chrome_processes()
+            
+            # Clean up any temporary profile directories
+            temp_dir = tempfile.gettempdir()
+            for item in os.listdir(temp_dir):
+                if item.startswith("browseruse_profile_"):
+                    profile_path = os.path.join(temp_dir, item)
+                    try:
+                        shutil.rmtree(profile_path, ignore_errors=True)
+                    except:
+                        pass
+            
+            logger.info("Clean start ensured")
+        except Exception as e:
+            logger.warning(f"Error ensuring clean start: {e}")
+
     def _create_browser_session(self):
         """Create a browser session configuration for the Agent."""
         if self.use_existing_chrome and self.chrome_executable_path:
             logger.info(f"Using Chrome executable at: {self.chrome_executable_path}")
             try:
+                # Create unique profile directory for each session
+                profile_dir = os.path.join(tempfile.gettempdir(), f"browseruse_profile_{uuid.uuid4().hex[:8]}")
+                
                 session = BrowserSession(
                     executable_path=self.chrome_executable_path,
                     headless=False,
-                    user_data_dir='~/.config/browseruse/profiles/default',
+                    user_data_dir=profile_dir,  # CHANGED: Use unique profile directory
                     ignore_https_errors=True,
-                    timeout=30000,  # 30 second timeout
+                    timeout=30000,
                     args=[
                         '--ignore-certificate-errors',
                         '--ignore-ssl-errors',
@@ -123,7 +149,10 @@ class ShippingTrackingAgent:
                         '--allow-running-insecure-content',
                         '--no-first-run',
                         '--disable-default-apps',
-                        '--disable-popup-blocking'
+                        '--disable-popup-blocking',
+                        '--disable-background-timer-throttling',  # ADDED: Prevent background throttling
+                        '--disable-backgrounding-occluded-windows',  # ADDED
+                        '--disable-renderer-backgrounding'  # ADDED
                     ]
                 )
                 self._active_sessions.append(session)
@@ -175,12 +204,20 @@ class ShippingTrackingAgent:
             system = platform.system()
             
             if system == "Windows":
+                # ENHANCED: Kill both chrome.exe and chromedriver.exe
                 subprocess.run(["taskkill", "/f", "/im", "chrome.exe"], 
                              capture_output=True, check=False)
+                subprocess.run(["taskkill", "/f", "/im", "chromedriver.exe"], 
+                             capture_output=True, check=False)
             elif system in ["Darwin", "Linux"]:
+                # ENHANCED: Kill chrome processes more specifically
                 subprocess.run(["pkill", "-f", "chrome"], 
                              capture_output=True, check=False)
+                subprocess.run(["pkill", "-f", "chromedriver"], 
+                             capture_output=True, check=False)
             
+            # ADDED: Wait for processes to terminate
+            await asyncio.sleep(2)
             logger.info("Force killed Chrome processes")
         except Exception as e:
             logger.warning(f"Could not force kill Chrome processes: {e}")
@@ -253,6 +290,9 @@ class ShippingTrackingAgent:
         logger.info(f"Starting shipment tracking for booking ID: {booking_id} with {self.llm_provider}")
 
         try:
+            # ADDED: Ensure clean start before beginning
+            await self._ensure_clean_start()
+            
             # Step 1: Check if we have cached successful patterns
             logger.debug(f"Checking cache for booking ID: {booking_id}")
             cached_result = await self.data_storage.get_cached_result(booking_id)
@@ -587,6 +627,16 @@ async def main():
     agent = None
     
     try:
+        # ADDED: Quick cleanup before starting
+        system = platform.system()
+        if system == "Windows":
+            subprocess.run(["taskkill", "/f", "/im", "chrome.exe"], 
+                         capture_output=True, check=False)
+        elif system in ["Darwin", "Linux"]:
+            subprocess.run(["pkill", "-f", "chrome"], 
+                         capture_output=True, check=False)
+        await asyncio.sleep(2)  # Wait for processes to terminate
+        
         # Create the tracking agent with Chrome support
         agent = ShippingTrackingAgent(use_existing_chrome=True)
         
