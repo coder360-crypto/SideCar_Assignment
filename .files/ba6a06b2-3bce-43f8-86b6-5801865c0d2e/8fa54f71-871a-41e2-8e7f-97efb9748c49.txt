@@ -1,0 +1,11 @@
+{
+  "booking_id": "SINI25432400",
+  "voyage_number": null,
+  "arrival_date": null,
+  "vessel_name": null,
+  "port_of_loading": null,
+  "port_of_discharge": null,
+  "status": null,
+  "source": "cache",
+  "retrieved_at": "2025-07-01T21:51:59.774979"
+}

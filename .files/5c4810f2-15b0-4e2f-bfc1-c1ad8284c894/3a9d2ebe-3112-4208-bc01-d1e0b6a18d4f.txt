@@ -1,0 +1,14 @@
+{
+  "voyage_number": null,
+  "arrival_date": null,
+  "departure_date": null,
+  "vessel_name": null,
+  "port_of_loading": null,
+  "port_of_discharge": null,
+  "status": "Failed to track shipping container/booking ID 'SINI25432400'. No tracking information found.",
+  "booking_id": "SINI25432400",
+  "retrieved_at": "2025-07-01T22:16:58.147587",
+  "source": "seacargotracking.net",
+  "method": "ai_browser_automation",
+  "llm_provider": "gemini"
+}

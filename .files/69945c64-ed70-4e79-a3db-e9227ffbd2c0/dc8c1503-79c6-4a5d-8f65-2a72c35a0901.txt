@@ -1,0 +1,14 @@
+{
+  "voyage_number": null,
+  "arrival_date": null,
+  "departure_date": null,
+  "vessel_name": null,
+  "port_of_loading": null,
+  "port_of_discharge": null,
+  "status": null,
+  "booking_id": "SINI25432400",
+  "retrieved_at": "2025-07-01T22:08:40.167042",
+  "source": "seacargotracking.net",
+  "method": "ai_browser_automation",
+  "llm_provider": "gemini"
+}

@@ -59,7 +59,7 @@ class ShippingTrackingAgent:
     """
 
     def __init__(self, llm_provider: str = None, api_key: str = None, 
-                 use_existing_chrome: bool = False, chrome_executable_path: str = None):
+                 use_existing_chrome: bool = True, chrome_executable_path: str = None):
         """Initialize the shipping tracking agent."""
         logger.info("Initializing ShippingTrackingAgent...")
         self.data_storage = DataStorage()
@@ -137,10 +137,11 @@ class ShippingTrackingAgent:
                 
                 session = BrowserSession(
                     executable_path=self.chrome_executable_path,
-                    headless=False,
+                    headless=True,
                     user_data_dir=profile_dir,  # CHANGED: Use unique profile directory
                     ignore_https_errors=True,
                     timeout=30000,
+                    viewport={'width': 1920, 'height': 1080},  # CHANGED: Use viewport instead of window_size
                     args=[
                         '--ignore-certificate-errors',
                         '--ignore-ssl-errors',
@@ -198,29 +199,6 @@ class ShippingTrackingAgent:
         self._active_sessions.clear()
         logger.info("All browser sessions cleaned up")
 
-    async def _force_kill_chrome_processes(self):
-        """Force kill any remaining Chrome processes."""
-        try:
-            system = platform.system()
-            
-            if system == "Windows":
-                # ENHANCED: Kill both chrome.exe and chromedriver.exe
-                subprocess.run(["taskkill", "/f", "/im", "chrome.exe"], 
-                             capture_output=True, check=False)
-                subprocess.run(["taskkill", "/f", "/im", "chromedriver.exe"], 
-                             capture_output=True, check=False)
-            elif system in ["Darwin", "Linux"]:
-                # ENHANCED: Kill chrome processes more specifically
-                subprocess.run(["pkill", "-f", "chrome"], 
-                             capture_output=True, check=False)
-                subprocess.run(["pkill", "-f", "chromedriver"], 
-                             capture_output=True, check=False)
-            
-            # ADDED: Wait for processes to terminate
-            await asyncio.sleep(2)
-            logger.info("Force killed Chrome processes")
-        except Exception as e:
-            logger.warning(f"Could not force kill Chrome processes: {e}")
 
     def _initialize_llm(self):
         """Initialize the appropriate LLM based on the provider setting."""
@@ -704,7 +682,6 @@ async def main():
         if agent:
             try:
                 await agent._cleanup_browser_sessions()
-                await agent._force_kill_chrome_processes()
                 logger.info("Final cleanup completed")
             except Exception as e:
                 logger.warning(f"Error during final cleanup: {e}")
