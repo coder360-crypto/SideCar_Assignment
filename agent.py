@@ -111,7 +111,7 @@ class ShippingTrackingAgent:
             try:
                 session = BrowserSession(
                     executable_path=self.chrome_executable_path,
-                    headless=True,
+                    headless=False,
                     user_data_dir='~/.config/browseruse/profiles/default',
                     ignore_https_errors=True,
                     timeout=30000,  # 30 second timeout
@@ -135,7 +135,7 @@ class ShippingTrackingAgent:
             logger.info("Using default Playwright browser session")
             try:
                 session = BrowserSession(
-                    headless=True,
+                    headless=False,
                     ignore_https_errors=True,
                     timeout=30000
                 )
