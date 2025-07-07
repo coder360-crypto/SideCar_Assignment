@@ -351,8 +351,9 @@ STEP 4: EXECUTE TRACKING WITH VALIDATION
     - "Bill of Lading" or "B/L Number"
 17. Enter '{booking_id}' in the most appropriate field based on the ID format
 18. Click the tracking/search button
-19. Wait minimum 10 seconds for results
+19. Wait minimum 20 seconds for results
 20. Check for loading indicators and wait until they disappear
+21. scroll down and find out all the fields and data that are available , scroll in 100 pixels increments take atleast 30 seconds in scrolling
 
 STEP 5: RESULT PROCESSING AND FALLBACK
 21. Examine the results page completely:
@@ -373,6 +374,7 @@ ENHANCED ERROR HANDLING:
 SUCCESS CRITERIA:
 - Must show actual container/shipment data (not just "search completed")
 - Must display at least 2 of: status, vessel info, port info, or dates
+- find out all the fields and data that are available scroll down and find out all the fields and data that are available
 - "Not specified" or empty fields don't count as successful tracking
 
 RESPONSE FORMAT:
