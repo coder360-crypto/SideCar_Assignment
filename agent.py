@@ -355,15 +355,21 @@ STEP 4: EXECUTE TRACKING WITH VALIDATION
 20. Check for loading indicators and wait until they disappear
 21. scroll down and find out all the fields and data that are available , scroll in 100 pixels increments take atleast 30 seconds in scrolling
 
-STEP 5: RESULT PROCESSING AND FALLBACK
-21. Examine the results page completely:
+
+STEP 5: Scroll down and find out all the fields and data that are available
+22. scroll down in the steps of 200 pixels and look for the information avaialable in the page.
+23. Scroll through the whole page look at each data tabel and status information.
+
+
+STEP 6 RESULT PROCESSING AND FALLBACK
+24 Examine the results page completely:
     - Look for data tables, status information, or tracking timelines
     - Check for error messages like "No results found" or "Invalid number"
-22. If tracking fails:
+25 If tracking fails:
     - Try removing prefixes from booking_id (keep only numbers)
     - Try different input fields if available
     - Look for format requirements or examples on the page
-23. If still no results, try alternative tracking methods on the same page
+26 If still no results, try alternative tracking methods on the same page
 
 ENHANCED ERROR HANDLING:
 - If HMM is not found: Document all shipping lines you did find

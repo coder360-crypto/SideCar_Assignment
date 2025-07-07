@@ -1,0 +1,14 @@
+{
+  "voyage_number": "Not available",
+  "arrival_date": "2025-03-28",
+  "departure_date": "2025-03-12",
+  "vessel_name": "Not available",
+  "port_of_loading": "SINGAPORE",
+  "port_of_discharge": "NHAVA SHEVA, INDIA",
+  "status": "In Transit",
+  "booking_id": "SINI25432400",
+  "retrieved_at": "2025-07-07T19:57:18.659281",
+  "source": "seacargotracking.net",
+  "method": "ai_browser_automation",
+  "llm_provider": "gemini"
+}
