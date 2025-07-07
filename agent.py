@@ -68,7 +68,7 @@ class ShippingTrackingAgent:
         self.llm_provider = (llm_provider or LLM_PROVIDER).lower()
         
         # Store the API key and browser connection settings
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv("GOOGLE_API_KEY")
         self.use_existing_chrome = use_existing_chrome
         self.chrome_executable_path = chrome_executable_path or self._get_default_chrome_path()
         
@@ -137,7 +137,7 @@ class ShippingTrackingAgent:
                 
                 session = BrowserSession(
                     executable_path=self.chrome_executable_path,
-                    headless=True,
+                    headless=False,
                     user_data_dir=profile_dir,  # CHANGED: Use unique profile directory
                     ignore_https_errors=True,
                     timeout=30000,
@@ -605,17 +605,6 @@ async def main():
     agent = None
     
     try:
-        # ADDED: Quick cleanup before starting
-        system = platform.system()
-        if system == "Windows":
-            subprocess.run(["taskkill", "/f", "/im", "chrome.exe"], 
-                         capture_output=True, check=False)
-        elif system in ["Darwin", "Linux"]:
-            subprocess.run(["pkill", "-f", "chrome"], 
-                         capture_output=True, check=False)
-        await asyncio.sleep(2)  # Wait for processes to terminate
-        
-        # Create the tracking agent with Chrome support
         agent = ShippingTrackingAgent(use_existing_chrome=True)
         
         # Track the shipment
@@ -692,15 +681,3 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("\n🛑 Process terminated")
-    finally:
-        # Final cleanup attempt
-        try:
-            system = platform.system()
-            if system == "Windows":
-                subprocess.run(["taskkill", "/f", "/im", "chrome.exe"], 
-                             capture_output=True, check=False)
-            elif system in ["Darwin", "Linux"]:
-                subprocess.run(["pkill", "-f", "chrome"], 
-                             capture_output=True, check=False)
-        except:
-            pass

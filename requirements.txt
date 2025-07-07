@@ -1,5 +1,5 @@
 # AI and LLM dependencies
-browser-use==0.2.1
+browser-use==0.3.0
 langchain>=0.1.0
 langchain-openai>=0.1.0
 openai>=1.0.0
@@ -30,7 +30,7 @@ pydantic
 # asyncio  # Built-in Python module
 # json     # Built-in Python module
 # datetime # Built-in Python module
-# pathlib  # Built-in Python module
+# pathlib  # Bult-in Python module
 # typing   # Built-in Python module
 
 # Optional: Alternative LLM providers
